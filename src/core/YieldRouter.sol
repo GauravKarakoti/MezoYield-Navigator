@@ -56,7 +56,6 @@ contract YieldRouter is AccessControl, ReentrancyGuard, Pausable {
         _grantRole(KEEPER_ROLE, msg.sender);
         _grantRole(STRATEGIST_ROLE, msg.sender);
 
-        receipt.setRouter(address(this));
         totalCap = type(uint256).max;
     }
 

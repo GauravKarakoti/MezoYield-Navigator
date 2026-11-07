@@ -3,6 +3,7 @@ pragma solidity ^0.8.24;
 
 import "./BaseStrategy.sol";
 import "../interfaces/IDittoVault.sol";
+import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
 /// @title DittoStrategy
 /// @notice Routes MUSD into the Ditto dMUSD vault. Handles Ditto's *asynchronous*
@@ -10,6 +11,8 @@ import "../interfaces/IDittoVault.sol";
 ///         claims MUSD back. Until then, the MUSD is tracked as "pending" so it
 ///         is never double-counted and never appears in `totalAssets` as liquid.
 contract DittoStrategy is BaseStrategy {
+    using SafeERC20 for IERC20;
+
     IDittoVault public immutable dVault;
 
     /// @notice User request id => requested amount in MUSD at request time.

@@ -3,11 +3,14 @@ pragma solidity ^0.8.24;
 
 import "./BaseStrategy.sol";
 import "../interfaces/IERC4626.sol";
+import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
 /// @title SMusdStrategy
 /// @notice Deploys MUSD into Mezo's native sMUSD ERC4626 vault.
 ///         Synchronous withdraw — router always gets MUSD back in the same tx.
 contract SMusdStrategy is BaseStrategy {
+    using SafeERC20 for IERC20;
+
     IERC4626 public immutable sVault;
 
     constructor(address _musd, address _router, address _sMusdVault)

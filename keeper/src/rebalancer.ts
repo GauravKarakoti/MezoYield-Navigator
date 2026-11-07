@@ -26,7 +26,7 @@ export async function tick() {
   apys.sort((a, b) => b.apyBps - a.apyBps);
   const best = apys[0];
   const worst = apys[apys.length - 1];
-  const diff = best.apyBps - worst.apyBps;
+  const diff = best!.apyBps - worst!.apyBps;
   if (diff < config.apyDiffBps) {
     logger.info({ diff, threshold: config.apyDiffBps }, 'Yield diff below threshold');
     return;
@@ -34,9 +34,9 @@ export async function tick() {
 
   // Compute the amount to move: cap by destination's room.
   const [srcVal, dstVal, dstCap] = await Promise.all([
-    pub.readContract({ address: config.router, abi: routerAbi, functionName: 'strategyValue', args: [worst.address] }),
-    pub.readContract({ address: config.router, abi: routerAbi, functionName: 'strategyValue', args: [best.address] }),
-    pub.readContract({ address: config.router, abi: routerAbi, functionName: 'strategyCap', args: [best.address] }),
+    pub.readContract({ address: config.router, abi: routerAbi, functionName: 'strategyValue', args: [worst!.address] }),
+    pub.readContract({ address: config.router, abi: routerAbi, functionName: 'strategyValue', args: [best!.address] }),
+    pub.readContract({ address: config.router, abi: routerAbi, functionName: 'strategyCap', args: [best!.address] }),
   ]);
 
   const room = dstCap > dstVal ? dstCap - dstVal : 0n;
@@ -48,17 +48,17 @@ export async function tick() {
   }
 
   if (config.dryRun) {
-    logger.info({ src: worst.address, dst: best.address, amount: amount.toString(), diffBps: diff }, 'DRY RUN rebalance');
+    logger.info({ src: worst!.address, dst: best!.address, amount: amount.toString(), diffBps: diff }, 'DRY RUN rebalance');
     return;
   }
 
-  logger.info({ src: worst.address, dst: best.address, amount: formatUnits(amount, 18) }, 'Submitting rebalance');
+  logger.info({ src: worst!.address, dst: best!.address, amount: formatUnits(amount, 18) }, 'Submitting rebalance');
   const hash = await wallet.writeContract({
     address: config.router,
     abi: routerAbi,
     functionName: 'rebalance',
-    args: [worst.address, best.address, amount],
-  });
+    args: [worst!.address, best!.address, amount],
+  } as any);
   logger.info({ hash }, 'Rebalance submitted');
 }
 

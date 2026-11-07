@@ -1,0 +1,28 @@
+{
+  "name": "mezoyield-navigator",
+  "version": "1.0.0",
+  "description": "**The cross-chain autopilot for your Bitcoin-backed stablecoin yield.**",
+  "main": "index.js",
+  "directories": {
+    "lib": "lib",
+    "test": "test"
+  },
+  "type": "module",
+  "scripts": {
+    "deploy": "forge script script/Deploy.s.sol --rpc-url mezo_testnet --broadcast --verify --slow --resume && node script/export-deployments.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/GauravKarakoti/MezoYield-Navigator.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/GauravKarakoti/MezoYield-Navigator/issues"
+  },
+  "homepage": "https://github.com/GauravKarakoti/MezoYield-Navigator#readme",
+  "dependencies": {
+    "dotenv": "^18.0.9"
+  }
+}
