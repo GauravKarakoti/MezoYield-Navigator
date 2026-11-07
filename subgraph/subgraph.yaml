@@ -6,7 +6,7 @@ schema:
 dataSources:
   - kind: ethereum
     name: YieldRouter
-    network: sepolia
+    network: mezo-testnet
     source:
       address: "0x48Ffd77Fa2ff1316484c58DD1268eC8e58cF5C0F"
       abi: YieldRouter
@@ -57,3 +57,139 @@ dataSources:
         - event: Withdrawn(indexed address,uint256,uint256)
           handler: handleWithdrawn
       file: ./src/yield-router.ts
+  - kind: ethereum
+    name: BoostManager
+    network: mezo-testnet
+    source:
+      address: "0xF9A12943C704661451A67E4346ABF298e2009352"
+      abi: BoostManager
+      startBlock: 8955006
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.9
+      language: wasm/assemblyscript
+      entities:
+        - AutoBoostSet
+        - LockedToVeMezo
+        - MezoClaimed
+        - MezoCredited
+        - OperatorSet
+        - OwnershipTransferred
+      abis:
+        - name: BoostManager
+          file: ./abis/BoostManager.json
+      eventHandlers:
+        - event: AutoBoostSet(indexed address,bool)
+          handler: handleAutoBoostSet
+        - event: LockedToVeMezo(uint256,uint256)
+          handler: handleLockedToVeMezo
+        - event: MezoClaimed(indexed address,uint256)
+          handler: handleMezoClaimed
+        - event: MezoCredited(indexed address,uint256)
+          handler: handleMezoCredited
+        - event: OperatorSet(indexed address,bool)
+          handler: handleOperatorSet
+        - event: OwnershipTransferred(indexed address,indexed address)
+          handler: handleOwnershipTransferred
+      file: ./src/boost-manager.ts
+  - kind: ethereum
+    name: DittoStrategy
+    network: mezo-testnet
+    source:
+      address: "0xD90ee969c17Dd1f513586a72a8CE08a74c9292F2"
+      abi: DittoStrategy
+      startBlock: 8954999
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.9
+      language: wasm/assemblyscript
+      entities:
+        - DittoStrategyOwnershipTransferred
+        - RedeemClaimed
+        - RedeemRequested
+      abis:
+        - name: DittoStrategy
+          file: ./abis/DittoStrategy.json
+      eventHandlers:
+        - event: OwnershipTransferred(indexed address,indexed address)
+          handler: handleOwnershipTransferred
+        - event: RedeemClaimed(indexed uint256,uint256)
+          handler: handleRedeemClaimed
+        - event: RedeemRequested(indexed uint256,uint256,uint256)
+          handler: handleRedeemRequested
+      file: ./src/ditto-strategy.ts
+  - kind: ethereum
+    name: GaugeVoteModule
+    network: mezo-testnet
+    source:
+      address: "0x751cE5d771Fac1dA6D44Ad00cCba49f312d8A322"
+      abi: GaugeVoteModule
+      startBlock: 8955007
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.9
+      language: wasm/assemblyscript
+      entities:
+        - ExecutorSet
+        - IntentSet
+        - GaugeVoteModuleOwnershipTransferred
+        - VoteCast
+      abis:
+        - name: GaugeVoteModule
+          file: ./abis/GaugeVoteModule.json
+      eventHandlers:
+        - event: ExecutorSet(indexed address,bool)
+          handler: handleExecutorSet
+        - event: IntentSet(indexed address,address,uint256)
+          handler: handleIntentSet
+        - event: OwnershipTransferred(indexed address,indexed address)
+          handler: handleOwnershipTransferred
+        - event: VoteCast(indexed address,address,uint256)
+          handler: handleVoteCast
+      file: ./src/gauge-vote-module.ts
+  - kind: ethereum
+    name: SMusdStrategy
+    network: mezo-testnet
+    source:
+      address: "0x0C5Ef19B5Aeb0a32F1d0bff2891EaD538D0ed245"
+      abi: SMusdStrategy
+      startBlock: 8954998
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.9
+      language: wasm/assemblyscript
+      entities:
+        - SMusdStrategyOwnershipTransferred
+      abis:
+        - name: SMusdStrategy
+          file: ./abis/SMusdStrategy.json
+      eventHandlers:
+        - event: OwnershipTransferred(indexed address,indexed address)
+          handler: handleOwnershipTransferred
+      file: ./src/s-musd-strategy.ts
+  - kind: ethereum
+    name: nyMUSD
+    network: mezo-testnet
+    source:
+      address: "0x119F1C92DB209Be928aaD48185CC997B9E442261"
+      abi: nyMUSD
+      startBlock: 8819144
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.9
+      language: wasm/assemblyscript
+      entities:
+        - Approval
+        - nyMUSDOwnershipTransferred
+        - Transfer
+      abis:
+        - name: nyMUSD
+          file: ./abis/nyMUSD.json
+      eventHandlers:
+        - event: Approval(indexed address,indexed address,uint256)
+          handler: handleApproval
+        - event: OwnershipTransferred(indexed address,indexed address)
+          handler: handleOwnershipTransferred
+        - event: Transfer(indexed address,indexed address,uint256)
+          handler: handleTransfer
+      file: ./src/ny-musd.ts
