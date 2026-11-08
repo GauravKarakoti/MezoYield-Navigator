@@ -1,23 +1,16 @@
 {
   "mezo-testnet": {
-    "YieldRouter": {
-      "address": "0x48Ffd77Fa2ff1316484c58DD1268eC8e58cF5C0F",
-      "startBlock": 8819147
-    },
     "BoostManager": {
       "address": "0xF9A12943C704661451A67E4346ABF298e2009352"
     },
     "GaugeVoteModule": {
       "address": "0x751cE5d771Fac1dA6D44Ad00cCba49f312d8A322"
     },
-    "DittoStrategy": {
-      "address": "0xb1CaE5c0D757E8fca044705FF9368D0BD6914834"
-    },
-    "SMusdStrategy": {
-      "address": "0xD62Dcf739F78dccf33C6346d63c033438898D24a"
+    "YieldRouter": {
+      "address": "0x03dA8717595359Fed10A2676D5310f42569fD13D"
     },
     "nyMUSD": {
-      "address": "0x2f69A12a7a0BaB1943E04aED30dc72776c28ae3c"
+      "address": "0x3B4A3e196D9874Bc8566A091573dA9bB444B2DC0"
     }
   }
 }

@@ -10,6 +10,10 @@ contract nyMUSD is ERC20, Ownable {
     address public router;
 
     error NotRouter();
+    error RouterAlreadySet();
+    error ZeroAddress();
+
+    event RouterSet(address indexed router);
 
     modifier onlyRouter() {
         if (msg.sender != router) revert NotRouter();
@@ -18,18 +22,19 @@ contract nyMUSD is ERC20, Ownable {
 
     constructor() ERC20("Navigator MUSD", "nyMUSD") Ownable(msg.sender) {}
 
-    function setRouter(address _router) external {
-        require(router == address(0), "already set");
+    /// @notice One-shot: only the owner can set the router, and only once.
+    function setRouter(address _router) external onlyOwner {
+        if (router != address(0)) revert RouterAlreadySet();
+        if (_router == address(0)) revert ZeroAddress();
         router = _router;
+        emit RouterSet(_router);
     }
 
-    function mint(address to, uint256 amount) external {
-        if (msg.sender != router) revert NotRouter();
+    function mint(address to, uint256 amount) external onlyRouter {
         _mint(to, amount);
     }
 
-    function burn(address from, uint256 amount) external {
-        if (msg.sender != router) revert NotRouter();
+    function burn(address from, uint256 amount) external onlyRouter {
         _burn(from, amount);
     }
 }

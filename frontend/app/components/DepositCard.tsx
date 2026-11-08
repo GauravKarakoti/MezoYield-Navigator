@@ -20,12 +20,16 @@ const MUSD = ((deployment.contracts as any).MUSD?.address ??
   process.env.NEXT_PUBLIC_MUSD ??
   '0x118917a40FAF1CD7a13dB0Ef56C86De7973Ac503') as `0x${string}`;
 
+const ONE = BigInt(10) ** BigInt(18);
+
 type Tab = 'deposit' | 'withdraw';
 
 export function DepositCard() {
   const { address, isConnected } = useAccount();
   const [tab, setTab] = useState<Tab>('deposit');
   const [amount, setAmount] = useState('');
+  // True when the user pressed Max on the withdraw tab: withdraw the exact share balance.
+  const [useMax, setUseMax] = useState(false);
 
   // ─── Read state ───
   const { data: ppsRaw, refetch: refetchPps } = useReadContract({
@@ -70,10 +74,15 @@ export function DepositCard() {
     [pps]
   );
 
-  const positionMusd = useMemo(() => {
-    if (!nymusdBalance || !pps) return 0;
-    return Number(formatUnits((nymusdBalance * pps) / BigInt(10) ** BigInt(18), 18));
+  const positionWei = useMemo(() => {
+    if (!nymusdBalance || !pps) return BigInt(0);
+    return (nymusdBalance * pps) / ONE;
   }, [nymusdBalance, pps]);
+
+  const positionMusd = useMemo(
+    () => Number(formatUnits(positionWei, 18)),
+    [positionWei]
+  );
 
   const amountWei = useMemo(() => {
     try {
@@ -82,6 +91,13 @@ export function DepositCard() {
       return BigInt(0);
     }
   }, [amount]);
+
+  // Shares to burn on withdraw: exact balance when Max was used, else derived from the amount.
+  const sharesToWithdraw = useMemo(() => {
+    if (useMax && nymusdBalance) return nymusdBalance;
+    if (!pps || amountWei === BigInt(0)) return BigInt(0);
+    return (amountWei * ONE) / pps;
+  }, [useMax, nymusdBalance, pps, amountWei]);
 
   const needsApproval =
     tab === 'deposit' &&
@@ -94,11 +110,10 @@ export function DepositCard() {
     musdBalance !== undefined &&
     amountWei > musdBalance;
 
-  const insufficientWithdraw = useMemo(() => {
-    if (tab !== 'withdraw' || !nymusdBalance || !pps) return false;
-    const sharesNeeded = (amountWei * BigInt(10) ** BigInt(18)) / pps;
-    return sharesNeeded > nymusdBalance;
-  }, [tab, amountWei, nymusdBalance, pps]);
+  const insufficientWithdraw =
+    tab === 'withdraw' &&
+    nymusdBalance !== undefined &&
+    sharesToWithdraw > nymusdBalance;
 
   // ─── Write: approve ───
   const {
@@ -144,6 +159,7 @@ export function DepositCard() {
   useEffect(() => {
     if (isDepositSuccess) {
       setAmount('');
+      setUseMax(false);
       refetchPps();
       refetchMusdBalance();
       refetchShares();
@@ -154,6 +170,7 @@ export function DepositCard() {
   useEffect(() => {
     if (isWithdrawSuccess) {
       setAmount('');
+      setUseMax(false);
       refetchPps();
       refetchMusdBalance();
       refetchShares();
@@ -161,6 +178,12 @@ export function DepositCard() {
   }, [isWithdrawSuccess, refetchPps, refetchMusdBalance, refetchShares]);
 
   // ─── Handlers ───
+  const switchTab = (next: Tab) => {
+    setTab(next);
+    setAmount('');
+    setUseMax(false);
+  };
+
   const onApprove = () => {
     if (!amountWei) return;
     resetDeposit();
@@ -176,6 +199,7 @@ export function DepositCard() {
   const onDeposit = () => {
     if (!amountWei) return;
     resetApprove();
+    resetWithdraw();
     deposit({
       address: ROUTER,
       abi: routerAbi,
@@ -185,23 +209,23 @@ export function DepositCard() {
   };
 
   const onWithdraw = () => {
-    if (!amountWei || !pps) return;
+    if (sharesToWithdraw === BigInt(0)) return;
     resetApprove();
-    const shares = (amountWei * BigInt(10) ** BigInt(18)) / pps;
-    if (shares === BigInt(0)) return;
+    resetDeposit();
     withdraw({
       address: ROUTER,
       abi: routerAbi,
       functionName: 'withdraw',
-      args: [shares],
+      args: [sharesToWithdraw],
     });
   };
 
   const setMax = () => {
     if (tab === 'deposit' && musdBalance) {
       setAmount(formatUnits(musdBalance, 18));
-    } else if (tab === 'withdraw') {
-      setAmount(positionMusd.toString());
+    } else if (tab === 'withdraw' && positionWei > BigInt(0)) {
+      setAmount(formatUnits(positionWei, 18));
+      setUseMax(true);
     }
   };
 
@@ -251,14 +275,14 @@ export function DepositCard() {
         <button
           className="tab"
           data-active={tab === 'deposit'}
-          onClick={() => setTab('deposit')}
+          onClick={() => switchTab('deposit')}
         >
           Deposit
         </button>
         <button
           className="tab"
           data-active={tab === 'withdraw'}
-          onClick={() => setTab('withdraw')}
+          onClick={() => switchTab('withdraw')}
         >
           Withdraw
         </button>
@@ -309,7 +333,10 @@ export function DepositCard() {
             value={amount}
             onChange={(e) => {
               const v = e.target.value;
-              if (/^\d*\.?\d*$/.test(v)) setAmount(v);
+              if (/^\d*\.?\d*$/.test(v)) {
+                setAmount(v);
+                setUseMax(false); // manual edit cancels "withdraw everything"
+              }
             }}
             disabled={isBusy}
           />
@@ -328,29 +355,25 @@ export function DepositCard() {
 
       {/* Info row */}
       <div className="flex justify-between text-xs text-[var(--fg-muted)] mb-4 px-1">
-        <span>You receive</span>
+        <span>{tab === 'deposit' ? 'You receive' : 'You burn'}</span>
         <span className="tabular">
           {tab === 'deposit'
             ? amountWei && pps
-              ? `${Number(formatUnits((amountWei * BigInt(10) ** BigInt(18)) / pps, 18)).toFixed(4)} nyMUSD`
+              ? `${Number(formatUnits((amountWei * ONE) / pps, 18)).toFixed(4)} nyMUSD`
               : '—'
-            : amount
-            ? `${amount} MUSD`
+            : sharesToWithdraw > BigInt(0)
+            ? `${Number(formatUnits(sharesToWithdraw, 18)).toFixed(4)} nyMUSD`
             : '—'}
         </span>
       </div>
 
       {/* Error */}
-      {errorMsg && (
-        <div className="alert alert-error mb-4">
-          {errorMsg}
-        </div>
-      )}
+      {errorMsg && <div className="alert alert-error mb-4">{errorMsg}</div>}
 
       {/* Success */}
       {isDepositSuccess && (
         <div className="alert alert-success mb-4">
-          Deposit confirmed. Your shares are now accruing yield.
+          Deposit confirmed. nyMUSD shares have been minted to your wallet.
         </div>
       )}
       {isWithdrawSuccess && (

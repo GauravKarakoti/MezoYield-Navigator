@@ -10,7 +10,7 @@ import {
   TargetUpdated as TargetUpdatedEvent,
   TotalCapUpdated as TotalCapUpdatedEvent,
   Unpaused as UnpausedEvent,
-  Withdrawn as WithdrawnEvent
+  Withdrawn as WithdrawnEvent,
 } from "../generated/YieldRouter/YieldRouter"
 import {
   Deposited,
@@ -24,12 +24,12 @@ import {
   TargetUpdated,
   TotalCapUpdated,
   Unpaused,
-  Withdrawn
+  Withdrawn,
 } from "../generated/schema"
 
 export function handleDeposited(event: DepositedEvent): void {
   let entity = new Deposited(
-    event.transaction.hash.concatI32(event.logIndex.toI32())
+    event.transaction.hash.concatI32(event.logIndex.toI32()),
   )
   entity.user = event.params.user
   entity.musdIn = event.params.musdIn
@@ -44,7 +44,7 @@ export function handleDeposited(event: DepositedEvent): void {
 
 export function handlePaused(event: PausedEvent): void {
   let entity = new Paused(
-    event.transaction.hash.concatI32(event.logIndex.toI32())
+    event.transaction.hash.concatI32(event.logIndex.toI32()),
   )
   entity.account = event.params.account
 
@@ -57,7 +57,7 @@ export function handlePaused(event: PausedEvent): void {
 
 export function handleRebalanced(event: RebalancedEvent): void {
   let entity = new Rebalanced(
-    event.transaction.hash.concatI32(event.logIndex.toI32())
+    event.transaction.hash.concatI32(event.logIndex.toI32()),
   )
   entity.from = event.params.from
   entity.to = event.params.to
@@ -72,7 +72,7 @@ export function handleRebalanced(event: RebalancedEvent): void {
 
 export function handleRoleAdminChanged(event: RoleAdminChangedEvent): void {
   let entity = new RoleAdminChanged(
-    event.transaction.hash.concatI32(event.logIndex.toI32())
+    event.transaction.hash.concatI32(event.logIndex.toI32()),
   )
   entity.role = event.params.role
   entity.previousAdminRole = event.params.previousAdminRole
@@ -87,7 +87,7 @@ export function handleRoleAdminChanged(event: RoleAdminChangedEvent): void {
 
 export function handleRoleGranted(event: RoleGrantedEvent): void {
   let entity = new RoleGranted(
-    event.transaction.hash.concatI32(event.logIndex.toI32())
+    event.transaction.hash.concatI32(event.logIndex.toI32()),
   )
   entity.role = event.params.role
   entity.account = event.params.account
@@ -102,7 +102,7 @@ export function handleRoleGranted(event: RoleGrantedEvent): void {
 
 export function handleRoleRevoked(event: RoleRevokedEvent): void {
   let entity = new RoleRevoked(
-    event.transaction.hash.concatI32(event.logIndex.toI32())
+    event.transaction.hash.concatI32(event.logIndex.toI32()),
   )
   entity.role = event.params.role
   entity.account = event.params.account
@@ -117,7 +117,7 @@ export function handleRoleRevoked(event: RoleRevokedEvent): void {
 
 export function handleStrategyAdded(event: StrategyAddedEvent): void {
   let entity = new StrategyAdded(
-    event.transaction.hash.concatI32(event.logIndex.toI32())
+    event.transaction.hash.concatI32(event.logIndex.toI32()),
   )
   entity.strategy = event.params.strategy
   entity.cap = event.params.cap
@@ -131,7 +131,7 @@ export function handleStrategyAdded(event: StrategyAddedEvent): void {
 
 export function handleStrategyCapUpdated(event: StrategyCapUpdatedEvent): void {
   let entity = new StrategyCapUpdated(
-    event.transaction.hash.concatI32(event.logIndex.toI32())
+    event.transaction.hash.concatI32(event.logIndex.toI32()),
   )
   entity.strategy = event.params.strategy
   entity.cap = event.params.cap
@@ -145,7 +145,7 @@ export function handleStrategyCapUpdated(event: StrategyCapUpdatedEvent): void {
 
 export function handleTargetUpdated(event: TargetUpdatedEvent): void {
   let entity = new TargetUpdated(
-    event.transaction.hash.concatI32(event.logIndex.toI32())
+    event.transaction.hash.concatI32(event.logIndex.toI32()),
   )
   entity.strategy = event.params.strategy
   entity.bps = event.params.bps
@@ -159,7 +159,7 @@ export function handleTargetUpdated(event: TargetUpdatedEvent): void {
 
 export function handleTotalCapUpdated(event: TotalCapUpdatedEvent): void {
   let entity = new TotalCapUpdated(
-    event.transaction.hash.concatI32(event.logIndex.toI32())
+    event.transaction.hash.concatI32(event.logIndex.toI32()),
   )
   entity.cap = event.params.cap
 
@@ -172,7 +172,7 @@ export function handleTotalCapUpdated(event: TotalCapUpdatedEvent): void {
 
 export function handleUnpaused(event: UnpausedEvent): void {
   let entity = new Unpaused(
-    event.transaction.hash.concatI32(event.logIndex.toI32())
+    event.transaction.hash.concatI32(event.logIndex.toI32()),
   )
   entity.account = event.params.account
 
@@ -185,7 +185,7 @@ export function handleUnpaused(event: UnpausedEvent): void {
 
 export function handleWithdrawn(event: WithdrawnEvent): void {
   let entity = new Withdrawn(
-    event.transaction.hash.concatI32(event.logIndex.toI32())
+    event.transaction.hash.concatI32(event.logIndex.toI32()),
   )
   entity.user = event.params.user
   entity.sharesIn = event.params.sharesIn

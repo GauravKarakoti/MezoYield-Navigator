@@ -25,6 +25,7 @@ contract YieldRouter is AccessControl, ReentrancyGuard, Pausable {
     address[] public strategies;
     mapping(address => bool) public isStrategy;
     mapping(address => uint256) public strategyCap; // max MUSD in each strategy
+    mapping(address => bool) public strategyDisabled;
 
     uint256 public totalAssets;          // MUSD managed (excludes pending Ditto)
     uint256 public totalPendingAssets;   // MUSD waiting on async redemptions
@@ -171,7 +172,7 @@ contract YieldRouter is AccessControl, ReentrancyGuard, Pausable {
         uint256 moved = available < amount ? available : amount;
 
         // Respect destination cap
-        uint256 destValue = strategyValue(to);
+        uint256 destValue = _safeValue(to);
         uint256 cap = strategyCap[to];
         if (destValue + moved > cap) {
             moved = cap > destValue ? cap - destValue : 0;
@@ -192,16 +193,31 @@ contract YieldRouter is AccessControl, ReentrancyGuard, Pausable {
         uint256 n = strategies.length;
         for (uint256 i = 0; i < n && remaining > 0; i++) {
             address s = strategies[i];
-            uint256 current = strategyValue(s);
+            if (strategyDisabled[s]) continue;
+            uint256 current = _safeValue(s);
             uint256 cap = strategyCap[s];
             if (current >= cap) continue;
             uint256 room = cap - current;
             uint256 give = remaining < room ? remaining : room;
             musd.safeTransfer(s, give);
-            BaseStrategy(s).deposit(give);
-            remaining -= give;
+            try BaseStrategy(s).deposit(give) {
+                remaining -= give;
+            } catch {
+                // funds sit idle in the strategy (counted in its totalAssets);
+                // keeper can redeploy later. Optionally emit an event here.
+                remaining -= give;
+            }
         }
-        // If remaining > 0, MUSD stays idle in the router (counts toward totalAssets).
+    }
+
+    function setStrategyDisabled(address s, bool d) external onlyRole(DEFAULT_ADMIN_ROLE) {
+        require(isStrategy[s], "unknown");
+        strategyDisabled[s] = d;
+    }
+
+    function _safeValue(address s) internal view returns (uint256) {
+        try BaseStrategy(s).totalAssets() returns (uint256 v) { return v; }
+        catch { return 0; }
     }
 
     function _liquidate(uint256 shares, uint256 grossNeeded, address to)
@@ -223,7 +239,8 @@ contract YieldRouter is AccessControl, ReentrancyGuard, Pausable {
         uint256 n = strategies.length;
         for (uint256 i = 0; i < n && need > 0; i++) {
             address s = strategies[i];
-            uint256 sVal = strategyValue(s);
+            if (strategyDisabled[s]) continue;
+            uint256 sVal = _safeValue(s);
             if (sVal == 0 || total == 0) continue;
 
             // Proportional slice of remaining need.

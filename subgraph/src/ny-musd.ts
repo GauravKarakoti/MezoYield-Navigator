@@ -1,9 +1,15 @@
 import {
   Approval as ApprovalEvent,
   OwnershipTransferred as OwnershipTransferredEvent,
+  RouterSet as RouterSetEvent,
   Transfer as TransferEvent,
 } from "../generated/nyMUSD/nyMUSD"
-import { Approval, OwnershipTransferred, Transfer } from "../generated/schema"
+import {
+  Approval,
+  OwnershipTransferred,
+  RouterSet,
+  Transfer,
+} from "../generated/schema"
 
 export function handleApproval(event: ApprovalEvent): void {
   let entity = new Approval(
@@ -28,6 +34,19 @@ export function handleOwnershipTransferred(
   )
   entity.previousOwner = event.params.previousOwner
   entity.newOwner = event.params.newOwner
+
+  entity.blockNumber = event.block.number
+  entity.blockTimestamp = event.block.timestamp
+  entity.transactionHash = event.transaction.hash
+
+  entity.save()
+}
+
+export function handleRouterSet(event: RouterSetEvent): void {
+  let entity = new RouterSet(
+    event.transaction.hash.concatI32(event.logIndex.toI32()),
+  )
+  entity.router = event.params.router
 
   entity.blockNumber = event.block.number
   entity.blockTimestamp = event.block.timestamp

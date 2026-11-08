@@ -7,8 +7,6 @@ import "../src/tokens/nyMUSD.sol";
 import "../src/core/YieldRouter.sol";
 import "../src/core/BoostManager.sol";
 import "../src/core/GaugeVoteModule.sol";
-import "../src/strategies/SMusdStrategy.sol";
-import "../src/strategies/DittoStrategy.sol";
 
 contract Deploy is Script {
     using stdJson for string;
@@ -27,8 +25,6 @@ contract Deploy is Script {
         address deployer = vm.addr(pk);
 
         address musd = vm.envAddress("MUSD_ADDRESS");
-        address sMusd = vm.envAddress("SMUSD_VAULT_ADDRESS");
-        address dMusd = vm.envAddress("DMUSD_VAULT_ADDRESS");
         address mezo = vm.envAddress("MEZO_ADDRESS");
         address veMezo = vm.envAddress("VEMEZO_ADDRESS");
         address voter = vm.envAddress("VOTER_ADDRESS");
@@ -39,22 +35,21 @@ contract Deploy is Script {
         YieldRouter router = new YieldRouter(musd, address(receipt));
         receipt.setRouter(address(router));
 
-        SMusdStrategy sStrat = new SMusdStrategy(musd, address(router), sMusd);
-        DittoStrategy dStrat = new DittoStrategy(musd, address(router), dMusd);
-
-        router.addStrategy(address(sStrat), type(uint256).max);
-        router.addStrategy(address(dStrat), type(uint256).max);
+        // NOTE: no strategies are registered for now. MUSD stays idle in the router
+        // and withdrawals are paid from that balance. Add strategies later with
+        // router.addStrategy(...) once each vault passes: asset() == MUSD,
+        // maxDeposit() > 0, and a small test deposit.
 
         BoostManager boost = new BoostManager(mezo, veMezo, address(router));
         GaugeVoteModule votes = new GaugeVoteModule(veMezo, voter);
 
-        // Grant keeper/operator roles to the actual deployer wallet
+        // Grant keeper/operator roles to the deployer wallet
         boost.setOperator(deployer, true);
         votes.setExecutor(deployer, true);
 
         vm.stopBroadcast();
 
-        // --- Save Deployed Addresses to JSON ---
+        // --- Save Combined Deployment JSON ---
         string memory dirPath = string.concat(vm.projectRoot(), "/deployments");
         vm.createDir(dirPath, true);
 
@@ -63,8 +58,6 @@ contract Deploy is Script {
 
         json = rootKey.serialize("nyMUSD", address(receipt));
         json = rootKey.serialize("YieldRouter", address(router));
-        json = rootKey.serialize("SMusdStrategy", address(sStrat));
-        json = rootKey.serialize("DittoStrategy", address(dStrat));
         json = rootKey.serialize("BoostManager", address(boost));
         json = rootKey.serialize("GaugeVoteModule", address(votes));
 
@@ -77,6 +70,6 @@ contract Deploy is Script {
 
         json.write(path);
 
-        console.log("Deployment addresses saved to:", path);
+        console.log("Combined deployment addresses saved to:", path);
     }
 }

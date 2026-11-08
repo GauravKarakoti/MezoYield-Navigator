@@ -13,6 +13,7 @@ contract SMusdStrategy is BaseStrategy {
     constructor(address _musd, address _router, address _sMusdVault)
         BaseStrategy(_musd, _router, _sMusdVault)
     {
+        require(IERC4626(_sMusdVault).asset() == _musd, "vault asset mismatch");
         sVault = IERC4626(_sMusdVault);
     }
 
@@ -23,11 +24,15 @@ contract SMusdStrategy is BaseStrategy {
     }
 
     function _deploy(uint256 amount) internal override {
+        if (amount == 0) return;
         asset.forceApprove(address(sVault), amount);
         sVault.deposit(amount, address(this));
     }
 
     function _pull(uint256 amount, address to) internal override returns (uint256 pulled) {
+        if (amount == 0) return 0;
+
+        // 1) Fast path: Idle MUSD in strategy
         uint256 idle = asset.balanceOf(address(this));
         if (idle > 0) {
             uint256 send = idle < amount ? idle : amount;
@@ -36,6 +41,7 @@ contract SMusdStrategy is BaseStrategy {
             if (pulled == amount) return pulled;
         }
 
+        // 2) Slow path: Redeem from sMUSD ERC4626 vault for the remainder
         uint256 need = amount - pulled;
         uint256 shares = sVault.convertToShares(need);
         uint256 maxShares = sVault.balanceOf(address(this));

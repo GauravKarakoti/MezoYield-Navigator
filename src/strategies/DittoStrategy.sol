@@ -3,6 +3,7 @@ pragma solidity ^0.8.24;
 
 import "./BaseStrategy.sol";
 import "../interfaces/IDittoVault.sol";
+import "../interfaces/IERC4626.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
 contract DittoStrategy is BaseStrategy {
@@ -20,6 +21,7 @@ contract DittoStrategy is BaseStrategy {
     constructor(address _musd, address _router, address _dMusdVault)
         BaseStrategy(_musd, _router, _dMusdVault)
     {
+        require(IERC4626(_dMusdVault).asset() == _musd, "vault asset mismatch");
         dVault = IDittoVault(_dMusdVault);
     }
 
@@ -30,11 +32,14 @@ contract DittoStrategy is BaseStrategy {
     }
 
     function _deploy(uint256 amount) internal override {
+        if (amount == 0) return;
         asset.forceApprove(address(dVault), amount);
         dVault.deposit(amount, address(this));
     }
 
     function _pull(uint256 amount, address to) internal override returns (uint256 pulled) {
+        if (amount == 0) return 0;
+
         uint256 idle = asset.balanceOf(address(this));
         if (idle > 0) {
             uint256 send = idle < amount ? idle : amount;

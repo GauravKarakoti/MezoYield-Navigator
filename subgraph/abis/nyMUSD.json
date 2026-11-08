@@ -183,6 +183,19 @@
   },
   {
     "type": "event",
+    "name": "RouterSet",
+    "inputs": [
+      {
+        "name": "router",
+        "type": "address",
+        "indexed": true,
+        "internalType": "address"
+      }
+    ],
+    "anonymous": false
+  },
+  {
+    "type": "event",
     "name": "Transfer",
     "inputs": [
       {
@@ -266,5 +279,7 @@
     "inputs": [
       { "name": "account", "type": "address", "internalType": "address" }
     ]
-  }
+  },
+  { "type": "error", "name": "RouterAlreadySet", "inputs": [] },
+  { "type": "error", "name": "ZeroAddress", "inputs": [] }
 ]

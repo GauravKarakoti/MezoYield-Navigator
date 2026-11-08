@@ -3,6 +3,7 @@ import { ethereum, Address, BigInt } from "@graphprotocol/graph-ts"
 import {
   Approval,
   OwnershipTransferred,
+  RouterSet,
   Transfer
 } from "../generated/nyMUSD/nyMUSD"
 
@@ -48,6 +49,18 @@ export function createOwnershipTransferredEvent(
   )
 
   return ownershipTransferredEvent
+}
+
+export function createRouterSetEvent(router: Address): RouterSet {
+  let routerSetEvent = changetype<RouterSet>(newMockEvent())
+
+  routerSetEvent.parameters = new Array()
+
+  routerSetEvent.parameters.push(
+    new ethereum.EventParam("router", ethereum.Value.fromAddress(router))
+  )
+
+  return routerSetEvent
 }
 
 export function createTransferEvent(
