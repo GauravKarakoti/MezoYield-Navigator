@@ -7,17 +7,17 @@
     "BoostManager": {
       "address": "0xF9A12943C704661451A67E4346ABF298e2009352"
     },
-    "DittoStrategy": {
-      "address": "0xD90ee969c17Dd1f513586a72a8CE08a74c9292F2"
-    },
     "GaugeVoteModule": {
       "address": "0x751cE5d771Fac1dA6D44Ad00cCba49f312d8A322"
     },
+    "DittoStrategy": {
+      "address": "0xb1CaE5c0D757E8fca044705FF9368D0BD6914834"
+    },
     "SMusdStrategy": {
-      "address": "0x0C5Ef19B5Aeb0a32F1d0bff2891EaD538D0ed245"
+      "address": "0xD62Dcf739F78dccf33C6346d63c033438898D24a"
     },
     "nyMUSD": {
-      "address": "0x119F1C92DB209Be928aaD48185CC997B9E442261"
+      "address": "0x2f69A12a7a0BaB1943E04aED30dc72776c28ae3c"
     }
   }
 }

@@ -5,23 +5,13 @@ import "./BaseStrategy.sol";
 import "../interfaces/IDittoVault.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
-/// @title DittoStrategy
-/// @notice Routes MUSD into the Ditto dMUSD vault. Handles Ditto's *asynchronous*
-///         redemption pattern: a request is created; when claimable, the router
-///         claims MUSD back. Until then, the MUSD is tracked as "pending" so it
-///         is never double-counted and never appears in `totalAssets` as liquid.
 contract DittoStrategy is BaseStrategy {
     using SafeERC20 for IERC20;
 
     IDittoVault public immutable dVault;
 
-    /// @notice User request id => requested amount in MUSD at request time.
     mapping(uint256 => uint256) public requestAmount;
-
-    /// @notice Open request ids (not yet claimed).
     uint256[] public openRequests;
-
-    /// @notice MUSD value locked in pending Ditto redemptions.
     uint256 public pendingRedeemValue;
 
     event RedeemRequested(uint256 indexed requestId, uint256 shares, uint256 amount);
@@ -45,7 +35,6 @@ contract DittoStrategy is BaseStrategy {
     }
 
     function _pull(uint256 amount, address to) internal override returns (uint256 pulled) {
-        // Fast path: idle MUSD.
         uint256 idle = asset.balanceOf(address(this));
         if (idle > 0) {
             uint256 send = idle < amount ? idle : amount;
@@ -54,7 +43,6 @@ contract DittoStrategy is BaseStrategy {
             if (pulled == amount) return pulled;
         }
 
-        // Slow path: initiate an async redemption request for the remainder.
         uint256 remaining = amount - pulled;
         uint256 shares = dVault.convertToShares(remaining);
         uint256 maxShares = dVault.balanceOf(address(this));
@@ -68,21 +56,16 @@ contract DittoStrategy is BaseStrategy {
         pendingRedeemValue += valueAtRequest;
 
         emit RedeemRequested(requestId, shares, valueAtRequest);
-        // Router notes: pulled here refers to MUSD actually sent. The remainder
-        // becomes available on `claimRedeem`.
     }
 
-    /// @notice Called by router (or keeper) once Ditto marks a request claimable.
     function claim(uint256 requestId, address to) external onlyRouter returns (uint256 assetsOut) {
         require(requestAmount[requestId] > 0, "unknown request");
         require(dVault.isRedeemClaimable(requestId), "not claimable");
 
         uint256 before = asset.balanceOf(address(this));
         assetsOut = dVault.claimRedeem(requestId);
-        // Some implementations transfer to `address(this)` directly.
         uint256 actual = asset.balanceOf(address(this)) - before;
         if (actual == 0 && assetsOut > 0) {
-            // If vault paid `assetsOut` directly to strategy, treat as actual.
             actual = assetsOut;
         }
 
@@ -90,7 +73,6 @@ contract DittoStrategy is BaseStrategy {
         pendingRedeemValue -= valueAtRequest;
         delete requestAmount[requestId];
 
-        // Remove from openRequests (swap-and-pop).
         uint256 len = openRequests.length;
         for (uint256 i = 0; i < len; i++) {
             if (openRequests[i] == requestId) {

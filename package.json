@@ -9,7 +9,7 @@
   },
   "type": "module",
   "scripts": {
-    "deploy": "forge script script/Deploy.s.sol --rpc-url mezo_testnet --broadcast --verify --slow --resume && node script/export-deployments.js"
+    "deploy": "forge script script/Deploy.s.sol --rpc-url mezo_testnet --broadcast --slow --resume && node script/export-deployments.js"
   },
   "repository": {
     "type": "git",

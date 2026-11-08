@@ -93,32 +93,6 @@ dataSources:
           handler: handleOwnershipTransferred
       file: ./src/boost-manager.ts
   - kind: ethereum
-    name: DittoStrategy
-    network: mezo-testnet
-    source:
-      address: "0xD90ee969c17Dd1f513586a72a8CE08a74c9292F2"
-      abi: DittoStrategy
-      startBlock: 8954999
-    mapping:
-      kind: ethereum/events
-      apiVersion: 0.0.9
-      language: wasm/assemblyscript
-      entities:
-        - DittoStrategyOwnershipTransferred
-        - RedeemClaimed
-        - RedeemRequested
-      abis:
-        - name: DittoStrategy
-          file: ./abis/DittoStrategy.json
-      eventHandlers:
-        - event: OwnershipTransferred(indexed address,indexed address)
-          handler: handleOwnershipTransferred
-        - event: RedeemClaimed(indexed uint256,uint256)
-          handler: handleRedeemClaimed
-        - event: RedeemRequested(indexed uint256,uint256,uint256)
-          handler: handleRedeemRequested
-      file: ./src/ditto-strategy.ts
-  - kind: ethereum
     name: GaugeVoteModule
     network: mezo-testnet
     source:
@@ -148,12 +122,38 @@ dataSources:
           handler: handleVoteCast
       file: ./src/gauge-vote-module.ts
   - kind: ethereum
+    name: DittoStrategy
+    network: mezo-testnet
+    source:
+      address: "0xb1CaE5c0D757E8fca044705FF9368D0BD6914834"
+      abi: DittoStrategy
+      startBlock: 0
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.9
+      language: wasm/assemblyscript
+      entities:
+        - DittoStrategyOwnershipTransferred
+        - RedeemClaimed
+        - RedeemRequested
+      abis:
+        - name: DittoStrategy
+          file: ./abis/DittoStrategy.json
+      eventHandlers:
+        - event: OwnershipTransferred(indexed address,indexed address)
+          handler: handleOwnershipTransferred
+        - event: RedeemClaimed(indexed uint256,uint256)
+          handler: handleRedeemClaimed
+        - event: RedeemRequested(indexed uint256,uint256,uint256)
+          handler: handleRedeemRequested
+      file: ./src/ditto-strategy.ts
+  - kind: ethereum
     name: SMusdStrategy
     network: mezo-testnet
     source:
-      address: "0x0C5Ef19B5Aeb0a32F1d0bff2891EaD538D0ed245"
+      address: "0xD62Dcf739F78dccf33C6346d63c033438898D24a"
       abi: SMusdStrategy
-      startBlock: 8954998
+      startBlock: 0
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.9
@@ -171,9 +171,9 @@ dataSources:
     name: nyMUSD
     network: mezo-testnet
     source:
-      address: "0x119F1C92DB209Be928aaD48185CC997B9E442261"
+      address: "0x2f69A12a7a0BaB1943E04aED30dc72776c28ae3c"
       abi: nyMUSD
-      startBlock: 8819144
+      startBlock: 0
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.9

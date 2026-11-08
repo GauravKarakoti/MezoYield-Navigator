@@ -58,6 +58,10 @@ contract YieldRouterTest is Test {
         sVault = new Mock4626(address(musd));
         receipt = new nyMUSD();
         router = new YieldRouter(address(musd), address(receipt));
+        
+        // Connect the receipt token to the router
+        receipt.setRouter(address(router));
+
         strat = new SMusdStrategy(address(musd), address(router), address(sVault));
 
         router.addStrategy(address(strat), type(uint256).max);

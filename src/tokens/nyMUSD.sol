@@ -18,16 +18,18 @@ contract nyMUSD is ERC20, Ownable {
 
     constructor() ERC20("Navigator MUSD", "nyMUSD") Ownable(msg.sender) {}
 
-    function setRouter(address _router) external onlyOwner {
-        require(_router != address(0), "router=0");
+    function setRouter(address _router) external {
+        require(router == address(0), "already set");
         router = _router;
     }
 
-    function mint(address to, uint256 amount) external onlyRouter {
+    function mint(address to, uint256 amount) external {
+        if (msg.sender != router) revert NotRouter();
         _mint(to, amount);
     }
 
-    function burn(address from, uint256 amount) external onlyRouter {
+    function burn(address from, uint256 amount) external {
+        if (msg.sender != router) revert NotRouter();
         _burn(from, amount);
     }
 }

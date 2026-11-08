@@ -161,33 +161,6 @@ type OwnershipTransferred @entity(immutable: true) {
   blockTimestamp: BigInt!
   transactionHash: Bytes!
 }
-type DittoStrategyOwnershipTransferred @entity(immutable: true) {
-  id: Bytes!
-  previousOwner: Bytes! # address
-  newOwner: Bytes! # address
-  blockNumber: BigInt!
-  blockTimestamp: BigInt!
-  transactionHash: Bytes!
-}
-
-type RedeemClaimed @entity(immutable: true) {
-  id: Bytes!
-  requestId: BigInt! # uint256
-  assetsOut: BigInt! # uint256
-  blockNumber: BigInt!
-  blockTimestamp: BigInt!
-  transactionHash: Bytes!
-}
-
-type RedeemRequested @entity(immutable: true) {
-  id: Bytes!
-  requestId: BigInt! # uint256
-  shares: BigInt! # uint256
-  amount: BigInt! # uint256
-  blockNumber: BigInt!
-  blockTimestamp: BigInt!
-  transactionHash: Bytes!
-}
 type ExecutorSet @entity(immutable: true) {
   id: Bytes!
   exec: Bytes! # address
@@ -221,6 +194,33 @@ type VoteCast @entity(immutable: true) {
   user: Bytes! # address
   gauge: Bytes! # address
   weightBps: BigInt! # uint256
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+type DittoStrategyOwnershipTransferred @entity(immutable: true) {
+  id: Bytes!
+  previousOwner: Bytes! # address
+  newOwner: Bytes! # address
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+type RedeemClaimed @entity(immutable: true) {
+  id: Bytes!
+  requestId: BigInt! # uint256
+  assetsOut: BigInt! # uint256
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+type RedeemRequested @entity(immutable: true) {
+  id: Bytes!
+  requestId: BigInt! # uint256
+  shares: BigInt! # uint256
+  amount: BigInt! # uint256
   blockNumber: BigInt!
   blockTimestamp: BigInt!
   transactionHash: Bytes!

@@ -1,13 +1,11 @@
 {
   "name": "subgraph",
   "license": "UNLICENSED",
+  "version": "1.0.1",
   "scripts": {
     "codegen": "graph codegen",
     "build": "graph build",
-    "deploy": "graph deploy --node https://api.studio.thegraph.com/deploy/ subgraph",
-    "create-local": "graph create --node http://localhost:8020/ subgraph",
-    "remove-local": "graph remove --node http://localhost:8020/ subgraph",
-    "deploy-local": "graph deploy --node http://localhost:8020/ --ipfs http://localhost:5001 subgraph",
+    "deploy": "goldsky subgraph deploy mezo-yield-navigator/1.0.1",
     "test": "graph test"
   },
   "dependencies": {

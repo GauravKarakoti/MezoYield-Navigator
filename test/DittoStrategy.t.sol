@@ -71,18 +71,20 @@ contract DittoStrategyTest is Test {
         strat.deposit(500e18);
         assertEq(ditto.balanceOf(address(strat)), 500e18);
         uint256 pulled = strat.pull(500e18, router);
-        // Async: pulled == 0, pending is tracked
-        assertEq(pulled, 0);
-        assertEq(strat.pendingRedeemValue(), 500e18);
-        assertEq(strat.openRequestCount(), 1);
+        assertEq(pulled, 500e18); // strategy holds 500e18 idle MUSD from setup mint
+        assertEq(strat.openRequestCount(), 0);
     }
 
     function testClaimAfterOperatorFulfills() public {
         strat.deposit(500e18);
-        strat.pull(500e18, router);
+        // Pull more than idle to trigger async request ID 1
+        uint256 pulled = strat.pull(800e18, router); 
+        assertEq(pulled, 500e18); // took all idle 500
+        assertEq(strat.openRequestCount(), 1);
+        
         ditto.markClaimable(1);
         uint256 out = strat.claim(1, router);
-        assertEq(out, 500e18);
+        assertEq(out, 300e18);
         assertEq(strat.pendingRedeemValue(), 0);
     }
 }

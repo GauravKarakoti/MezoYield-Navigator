@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "start": "tsx src/index.ts",
+    "dev": "tsx src/index.ts --watch",
     "dry": "DRY_RUN=1 tsx src/index.ts"
   },
   "dependencies": {
