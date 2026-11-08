@@ -1,6 +1,8 @@
 import { tick } from './rebalancer.js';
 import { logger } from './logger.js';
+import express from 'express';
 
+const app = express();
 const INTERVAL_MS = 60_000;
 
 logger.info('MezoYield Keeper starting');
@@ -18,3 +20,7 @@ async function loop() {
 
 setInterval(loop, INTERVAL_MS);
 loop();
+
+app.listen(3000, () => {
+  logger.info('Express server listening on port 3000');
+});
