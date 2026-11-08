@@ -1,14 +1,7 @@
-import { createWalletClient, createPublicClient, http, parseAbi, formatUnits } from 'viem';
+import { createWalletClient, createPublicClient, http, formatUnits } from 'viem';
 import { privateKeyToAccount } from 'viem/accounts';
 import { config } from './config.js';
 import { logger } from './logger.js';
-
-const routerAbi = parseAbi([
-  'function strategyValue(address) view returns (uint256)',
-  'function strategyCap(address) view returns (uint256)',
-  'function rebalance(address from, address to, uint256 amount)',
-  'function KEEPER_ROLE() view returns (bytes32)',
-]);
 
 export async function tick() {
   const account = privateKeyToAccount(config.privateKey);
@@ -24,20 +17,35 @@ export async function tick() {
 
   // Sort by APY desc.
   apys.sort((a, b) => b.apyBps - a.apyBps);
-  const best = apys[0];
-  const worst = apys[apys.length - 1];
-  const diff = best!.apyBps - worst!.apyBps;
+  const best = apys[0]!;
+  const worst = apys[apys.length - 1]!;
+  const diff = best.apyBps - worst.apyBps;
   if (diff < config.apyDiffBps) {
     logger.info({ diff, threshold: config.apyDiffBps }, 'Yield diff below threshold');
     return;
   }
 
   // Compute the amount to move: cap by destination's room.
-  const [srcVal, dstVal, dstCap] = await Promise.all([
-    pub.readContract({ address: config.router, abi: routerAbi, functionName: 'strategyValue', args: [worst!.address] }),
-    pub.readContract({ address: config.router, abi: routerAbi, functionName: 'strategyValue', args: [best!.address] }),
-    pub.readContract({ address: config.router, abi: routerAbi, functionName: 'strategyCap', args: [best!.address] }),
-  ]);
+  const [srcVal, dstVal, dstCap] = (await Promise.all([
+    pub.readContract({
+      address: config.router,
+      abi: config.routerAbi,
+      functionName: 'strategyValue',
+      args: [worst.address],
+    }),
+    pub.readContract({
+      address: config.router,
+      abi: config.routerAbi,
+      functionName: 'strategyValue',
+      args: [best.address],
+    }),
+    pub.readContract({
+      address: config.router,
+      abi: config.routerAbi,
+      functionName: 'strategyCap',
+      args: [best.address],
+    }),
+  ])) as [bigint, bigint, bigint];
 
   const room = dstCap > dstVal ? dstCap - dstVal : 0n;
   const amount = room < srcVal ? room : srcVal;
@@ -48,16 +56,22 @@ export async function tick() {
   }
 
   if (config.dryRun) {
-    logger.info({ src: worst!.address, dst: best!.address, amount: amount.toString(), diffBps: diff }, 'DRY RUN rebalance');
+    logger.info(
+      { src: worst.address, dst: best.address, amount: amount.toString(), diffBps: diff },
+      'DRY RUN rebalance'
+    );
     return;
   }
 
-  logger.info({ src: worst!.address, dst: best!.address, amount: formatUnits(amount, 18) }, 'Submitting rebalance');
+  logger.info(
+    { src: worst.address, dst: best.address, amount: formatUnits(amount, 18) },
+    'Submitting rebalance'
+  );
   const hash = await wallet.writeContract({
     address: config.router,
-    abi: routerAbi,
+    abi: config.routerAbi,
     functionName: 'rebalance',
-    args: [worst!.address, best!.address, amount],
+    args: [worst.address, best.address, amount],
   } as any);
   logger.info({ hash }, 'Rebalance submitted');
 }
